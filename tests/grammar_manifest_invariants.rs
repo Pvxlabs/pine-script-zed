@@ -114,3 +114,19 @@ fn manifest_rev_is_a_40_character_sha() {
     assert_eq!(rev.len(), 40);
     assert!(rev.chars().all(|ch| ch.is_ascii_hexdigit()));
 }
+
+#[test]
+fn readme_mentions_v6_default_and_vendor_dir() {
+    let readme = read("README.md");
+    assert!(readme.contains("Pine Script v6"));
+    assert!(readme.contains("vendor/tree-sitter-pine"));
+    assert!(readme.contains("npm --prefix vendor/tree-sitter-pine run generate"));
+}
+
+#[test]
+fn legacy_top_level_sample_is_removed() {
+    assert!(
+        !Path::new("test.pine").exists(),
+        "top-level sample should be removed in favor of versioned fixtures"
+    );
+}

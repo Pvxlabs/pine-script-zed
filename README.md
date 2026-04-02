@@ -1,6 +1,6 @@
 # Pine Script for Zed
 
-Pine Script language support for Zed, focused on syntax highlighting and core editing behavior for TradingView `.pine` files.
+Pine Script v6 language support for Zed, focused on syntax highlighting and core editing behavior for TradingView `.pine` files while retaining practical compatibility with Pine Script v5.
 
 ## Features
 
@@ -8,6 +8,7 @@ Pine Script language support for Zed, focused on syntax highlighting and core ed
 - `.pine` file recognition
 - `//` line comments
 - Bracket and quote auto-closing
+- Pine Script v6 fixtures and parser coverage with Pine Script v5 compatibility fixtures
 
 ## Development Install
 
@@ -26,6 +27,7 @@ Open any `.pine` file in Zed. The extension will apply Pine Script language conf
 ### Prerequisites
 
 - Rust toolchain
+- Node.js and npm
 - Zed editor
 
 ### Build
@@ -43,6 +45,15 @@ cargo check
 
 For manual verification, reinstall the repository as a dev extension in Zed and open files from `tests/fixtures/`.
 
+### Grammar Regeneration
+
+The vendored parser baseline lives in `vendor/tree-sitter-pine`.
+
+```bash
+npm --prefix vendor/tree-sitter-pine install
+npm --prefix vendor/tree-sitter-pine run generate
+```
+
 ## Project Structure
 
 ```text
@@ -51,14 +62,18 @@ For manual verification, reinstall the repository as a dev extension in Zed and 
 ├── Cargo.toml
 ├── src/
 │   └── lib.rs
+├── vendor/
+│   └── tree-sitter-pine/
 ├── languages/
 │   └── pinescript/
 │       ├── config.toml
 │       └── highlights.scm
-├── grammars/
-│   └── pinescript/
 ├── tests/
-│   └── fixtures/
+│   ├── fixtures/
+│   ├── ast_shape.rs
+│   ├── fixture_parsing.rs
+│   ├── grammar_manifest_invariants.rs
+│   └── grammar_registration.rs
 └── images/
 ```
 
