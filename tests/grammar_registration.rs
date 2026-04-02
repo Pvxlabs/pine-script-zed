@@ -8,6 +8,10 @@ fn extension_registers_the_tree_sitter_pine_grammar_name() {
         extension_manifest.contains("[grammars.pine]"),
         "extension.toml must register the tree-sitter grammar as `pine`"
     );
+    assert!(
+        extension_manifest.contains("path = \"vendor/tree-sitter-pine\""),
+        "extension.toml must point the grammar at the vendored tree-sitter source"
+    );
 
     let language_config = fs::read_to_string("languages/pinescript/config.toml")
         .expect("language config should be readable");

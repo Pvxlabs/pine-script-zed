@@ -56,3 +56,47 @@ fn vendored_highlight_query_is_not_shipped() {
         "extension highlight query should exist"
     );
 }
+
+fn read(path: &str) -> String {
+    std::fs::read_to_string(path).expect("file should be readable")
+}
+
+#[test]
+fn manifest_points_to_vendored_grammar() {
+    let manifest = read("extension.toml");
+    assert_eq!(
+        manifest
+            .matches("repository = \"https://github.com/Pvxlabs/pine-script-zed.git\"")
+            .count(),
+        2
+    );
+    assert!(manifest.contains("[grammars.pine]"));
+    let grammar_section = manifest
+        .split("[grammars.pine]")
+        .nth(1)
+        .expect("grammar section should exist");
+    assert!(
+        grammar_section.contains("repository = \"https://github.com/Pvxlabs/pine-script-zed.git\"")
+    );
+    assert!(grammar_section.contains("path = \"vendor/tree-sitter-pine\""));
+}
+
+#[test]
+fn cargo_has_tree_sitter_dev_dependencies() {
+    let cargo = read("Cargo.toml");
+    assert!(cargo.contains("[dev-dependencies]"));
+    assert!(cargo.contains("tree-sitter = "));
+    assert!(cargo.contains("tree-sitter-pine = { path = \"vendor/tree-sitter-pine\" }"));
+}
+
+#[test]
+fn manifest_rev_is_a_40_character_sha() {
+    let manifest = read("extension.toml");
+    let rev_line = manifest
+        .lines()
+        .find(|line| line.trim_start().starts_with("rev = "))
+        .expect("rev line should exist");
+    let rev = rev_line.split('"').nth(1).expect("rev should be quoted");
+    assert_eq!(rev.len(), 40);
+    assert!(rev.chars().all(|ch| ch.is_ascii_hexdigit()));
+}
