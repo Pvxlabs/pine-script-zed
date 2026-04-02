@@ -1,0 +1,5 @@
+//@version=6
+indicator("Dynamic Requests")
+if bar_index > 10
+    foreign_close = request.security("NASDAQ:AAPL", "1D", close)
+    plot(foreign_close)

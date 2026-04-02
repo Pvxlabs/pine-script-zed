@@ -1,0 +1,4 @@
+//@version=6
+indicator("V6 Indicator")
+values = array.new_float(0)
+plot(close, color=color.new(color.blue, 0))

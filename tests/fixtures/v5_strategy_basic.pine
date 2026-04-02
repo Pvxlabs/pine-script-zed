@@ -1,0 +1,5 @@
+//@version=5
+strategy("V5 Strategy")
+length = input.int(14, "Length")
+if ta.crossover(close, ta.sma(close, length))
+    strategy.entry("L", strategy.long)

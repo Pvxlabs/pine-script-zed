@@ -1,0 +1,7 @@
+//@version=5
+indicator("V5 Indicator")
+sma_value = ta.sma(close, 14)
+plot(sma_value)
+result = close > open ? close : open
+var float last_signal = na
+last_signal := result

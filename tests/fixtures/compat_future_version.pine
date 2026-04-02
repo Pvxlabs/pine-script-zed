@@ -1,0 +1,3 @@
+//@version=7
+indicator("Future Version")
+plot(close)

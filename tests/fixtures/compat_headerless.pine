@@ -1,0 +1,2 @@
+indicator("Headerless")
+plot(close)

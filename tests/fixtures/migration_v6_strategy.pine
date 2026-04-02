@@ -1,0 +1,4 @@
+//@version=6
+strategy("V6 Migration")
+if close > open
+    strategy.entry("L", strategy.long)
