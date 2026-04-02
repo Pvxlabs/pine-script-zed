@@ -68,7 +68,7 @@ cargo build --release --target wasm32-wasip2
 Install in Zed via:
 	•	Command palette → Install Dev Extension
 	•	Select this repository
-
+```
 ⸻
 
 License
