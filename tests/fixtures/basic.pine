@@ -1,0 +1,19 @@
+//@version=5
+indicator("Basic Pine Script Test")
+
+// Variable declarations
+var int counter = 0
+float price = close
+
+// Control flow
+if close > open
+    counter := counter + 1
+else
+    counter := 0
+
+// Function call
+plot(price, color=color.blue, title="Price")
+
+// Operators
+result = (close + open) / 2
+is_bullish = close > open and volume > 1000
