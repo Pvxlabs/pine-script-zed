@@ -74,7 +74,6 @@ npm --prefix vendor/tree-sitter-pine run generate
 │   ├── fixture_parsing.rs
 │   ├── grammar_manifest_invariants.rs
 │   └── grammar_registration.rs
-└── images/
 ```
 
 ## Reporting Issues
