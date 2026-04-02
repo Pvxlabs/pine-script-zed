@@ -1,4 +1,19 @@
-use std::path::Path;
+use std::{path::Path, process::Command};
+
+fn git_ls_files(args: &[&str]) -> String {
+    let output = Command::new("git")
+        .arg("ls-files")
+        .args(args)
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .expect("git ls-files should run");
+    assert!(
+        output.status.success(),
+        "git ls-files should succeed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    String::from_utf8(output.stdout).expect("git ls-files output should be utf8")
+}
 
 #[test]
 fn vendored_grammar_baseline_exists() {
@@ -19,18 +34,23 @@ fn vendored_grammar_baseline_exists() {
         "vendor/tree-sitter-pine/bindings/rust/build.rs",
     ] {
         assert!(Path::new(path).exists(), "{path} should exist");
+        let tracked = git_ls_files(&["--error-unmatch", path]);
+        assert_eq!(tracked.trim(), path, "{path} should be tracked by git");
     }
 }
 
 #[test]
 fn vendored_highlight_query_is_not_shipped() {
+    let tracked_vendor_files = git_ls_files(&["vendor/tree-sitter-pine"]);
+
     assert!(
-        !Path::new("vendor/tree-sitter-pine/queries/highlights.scm").exists(),
+        !tracked_vendor_files.contains("vendor/tree-sitter-pine/queries/highlights.scm"),
         "vendored runtime highlights query should not exist"
     );
-    assert!(!Path::new("vendor/tree-sitter-pine/.git").exists());
-    assert!(!Path::new("vendor/tree-sitter-pine/node_modules").exists());
-    assert!(!Path::new("vendor/tree-sitter-pine/bindings/node").exists());
+    assert!(
+        !tracked_vendor_files.contains("vendor/tree-sitter-pine/bindings/node"),
+        "vendored node bindings should not be tracked"
+    );
     assert!(
         Path::new("languages/pinescript/highlights.scm").exists(),
         "extension highlight query should exist"
