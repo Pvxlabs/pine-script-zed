@@ -39,3 +39,14 @@ fn language_config_uses_zed_brackets_array_syntax() {
         "language config must not use an `[auto_close]` table"
     );
 }
+
+#[test]
+fn language_config_recognizes_ps_and_pine_suffixes() {
+    let language_config = fs::read_to_string("languages/pinescript/config.toml")
+        .expect("language config should be readable");
+
+    assert!(
+        language_config.contains("path_suffixes = [\"pine\", \"ps\"]"),
+        "language config must recognize both `.pine` and `.ps` files"
+    );
+}

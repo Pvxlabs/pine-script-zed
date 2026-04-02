@@ -116,11 +116,14 @@ fn manifest_rev_is_a_40_character_sha() {
 }
 
 #[test]
-fn readme_mentions_v6_default_and_vendor_dir() {
+fn readme_documents_current_runtime_and_wasm_build_flow() {
     let readme = read("README.md");
+    assert!(readme.contains("MVP"));
     assert!(readme.contains("Pine Script v6"));
+    assert!(readme.contains(".ps"));
     assert!(readme.contains("vendor/tree-sitter-pine"));
-    assert!(readme.contains("npm --prefix vendor/tree-sitter-pine run generate"));
+    assert!(readme.contains("cargo build --release --target wasm32-wasip2"));
+    assert!(readme.contains("target/wasm32-wasip2/release/pine_script_zed.wasm"));
 }
 
 #[test]
@@ -132,7 +135,7 @@ fn legacy_top_level_sample_is_removed() {
 }
 
 #[test]
-fn release_manifest_rev_points_to_previous_commit() {
+fn manifest_rev_points_to_reachable_commit_with_vendored_grammar() {
     let manifest = read("extension.toml");
     let grammar_section = named_section(&manifest, "[grammars.pine]");
     let rev_line = grammar_section
@@ -141,17 +144,68 @@ fn release_manifest_rev_points_to_previous_commit() {
         .expect("rev line should exist");
     let rev = rev_line.split('"').nth(1).expect("rev should be quoted");
 
-    let output = Command::new("git")
-        .args(["rev-parse", "HEAD~1"])
+    let commit_exists = Command::new("git")
+        .args(["cat-file", "-e", &format!("{rev}^{{commit}}")])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
-        .expect("git rev-parse should run");
+        .expect("git cat-file should run");
     assert!(
-        output.status.success(),
-        "git rev-parse should succeed: {}",
-        String::from_utf8_lossy(&output.stderr)
+        commit_exists.status.success(),
+        "git cat-file should succeed for {rev}: {}",
+        String::from_utf8_lossy(&commit_exists.stderr)
     );
-    let expected = String::from_utf8(output.stdout).expect("git output should be utf8");
 
-    assert_eq!(rev, expected.trim());
+    let reachable = Command::new("git")
+        .args(["merge-base", "--is-ancestor", rev, "HEAD"])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .expect("git merge-base should run");
+    assert!(
+        reachable.status.success(),
+        "manifest rev should be reachable from HEAD"
+    );
+
+    let vendored_files = Command::new("git")
+        .args([
+            "ls-tree",
+            "-r",
+            "--name-only",
+            rev,
+            "vendor/tree-sitter-pine",
+        ])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .expect("git ls-tree should run");
+    assert!(
+        vendored_files.status.success(),
+        "git ls-tree should succeed: {}",
+        String::from_utf8_lossy(&vendored_files.stderr)
+    );
+    let vendored_files =
+        String::from_utf8(vendored_files.stdout).expect("git ls-tree output should be utf8");
+    assert!(
+        vendored_files.contains("vendor/tree-sitter-pine/grammar.js"),
+        "manifest rev should contain the vendored grammar baseline"
+    );
+}
+
+#[test]
+fn changelog_matches_current_mvp_scope() {
+    let changelog = read("CHANGELOG.md");
+    assert!(changelog.contains("MVP"));
+    assert!(changelog.contains("Tree-sitter"));
+    assert!(changelog.contains(".ps"));
+    assert!(
+        !changelog.contains("No Tree-sitter grammar"),
+        "CHANGELOG should not describe the current extension as lacking Tree-sitter"
+    );
+}
+
+#[test]
+fn gitignore_does_not_hide_removed_legacy_workspace() {
+    let gitignore = read(".gitignore");
+    assert!(
+        !gitignore.contains("/grammars/"),
+        ".gitignore should not keep hiding the removed top-level `grammars/` workspace"
+    );
 }

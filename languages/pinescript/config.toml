@@ -1,6 +1,6 @@
 name = "Pine Script"
 grammar = "pine"
-path_suffixes = ["pine"]
+path_suffixes = ["pine", "ps"]
 line_comments = ["//"]
 tab_size = 4
 hard_tabs = false

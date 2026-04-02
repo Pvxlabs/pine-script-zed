@@ -1,26 +1,52 @@
 # Pine Script for Zed
 
-Pine Script v6 language support for Zed, focused on syntax highlighting and core editing behavior for TradingView `.pine` files while retaining practical compatibility with Pine Script v5.
+Pine Script v6 language support for Zed, packaged as a language extension MVP for TradingView `.pine` and `.ps` files while retaining practical compatibility with Pine Script v5.
 
-## Features
+## Current Status
 
-- Tree-sitter-based syntax highlighting for Pine Script
-- `.pine` file recognition
-- `//` line comments
-- Bracket and quote auto-closing
-- Pine Script v6 fixtures and parser coverage with Pine Script v5 compatibility fixtures
+This repository currently focuses on a small, stable MVP:
+
+- Language registration for `.pine` and `.ps`
+- A vendored Tree-sitter grammar wired through [extension.toml](extension.toml)
+- Syntax highlighting via `languages/pinescript/highlights.scm`
+- Basic editor behavior: `//` line comments, soft tabs, bracket and quote auto-closing
+- Parser and highlight tests against Pine Script v5 and v6 fixtures
+
+The current MVP does not yet provide:
+
+- Outline or document symbols
+- Snippets
+- LSP, diagnostics, completion, hover, or goto-definition
+- AI-specific integration, prompts, or context tooling
+
+## Runtime Sources
+
+The runtime-relevant files in this repository are:
+
+- `extension.toml`: extension manifest and pinned grammar reference
+- `languages/pinescript/config.toml`: file associations and basic editor behavior
+- `languages/pinescript/highlights.scm`: shipped highlight query
+- `vendor/tree-sitter-pine`: vendored grammar baseline referenced by the manifest
+- `extension.wasm`: generated artifact for local Zed loads, rebuilt from `target/wasm32-wasip2/release/pine_script_zed.wasm`
 
 ## Development Install
 
 1. Clone this repository.
-2. Open Zed.
-3. Run `Install Dev Extension` from the command palette.
-4. Select the repository directory.
-5. Restart Zed if the language support does not load immediately.
+2. Build the extension wasm artifact:
+
+   ```bash
+   cargo build --release --target wasm32-wasip2
+   cp target/wasm32-wasip2/release/pine_script_zed.wasm extension.wasm
+   ```
+
+3. Open Zed.
+4. Run `Install Dev Extension` from the command palette.
+5. Select the repository directory.
+6. Restart Zed if the language support does not load immediately.
 
 ## Usage
 
-Open any `.pine` file in Zed. The extension will apply Pine Script language configuration and syntax highlighting automatically.
+Open any `.pine` or `.ps` file in Zed. The extension will apply Pine Script language configuration and syntax highlighting automatically.
 
 ## Development
 
@@ -33,17 +59,19 @@ Open any `.pine` file in Zed. The extension will apply Pine Script language conf
 ### Build
 
 ```bash
-cargo build --release
+cargo build --release --target wasm32-wasip2
 ```
+
+The Zed-loadable artifact is written to `target/wasm32-wasip2/release/pine_script_zed.wasm`. Copy it to `extension.wasm` at the repository root before reinstalling the dev extension in Zed.
 
 ### Verify
 
 ```bash
-cargo test
 cargo check
+cargo test
 ```
 
-For manual verification, reinstall the repository as a dev extension in Zed and open files from `tests/fixtures/`.
+For manual verification, rebuild `extension.wasm`, reinstall the repository as a dev extension in Zed, and open files from `tests/fixtures/`.
 
 ### Grammar Regeneration
 
@@ -59,7 +87,10 @@ npm --prefix vendor/tree-sitter-pine run generate
 ```text
 .
 ├── extension.toml
+├── extension.wasm
 ├── Cargo.toml
+├── docs/
+│   └── status.md
 ├── src/
 │   └── lib.rs
 ├── vendor/
@@ -75,6 +106,16 @@ npm --prefix vendor/tree-sitter-pine run generate
 │   ├── grammar_manifest_invariants.rs
 │   └── grammar_registration.rs
 ```
+
+## Planned / Next
+
+The next phase should deepen the current language-extension MVP rather than expand scope abruptly:
+
+- add clearer query coverage for outline and indentation metadata
+- expand fixture coverage for more Pine Script syntax edges
+- evaluate LSP or diagnostics only after the current MVP is stable
+
+See `docs/status.md` for a short status and roadmap note.
 
 ## Reporting Issues
 

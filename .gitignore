@@ -1,5 +1,10 @@
+# Cargo build output
 /target/
+
+# Generated extension artifact copied from `target/wasm32-wasip2/...` for local Zed loads
 /extension.wasm
-/grammars/
+
+# Local planning scratch space, not part of the shipped extension
 docs/superpowers/
+
 .DS_Store
