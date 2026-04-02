@@ -22,6 +22,7 @@ const FIXTURES: &[&str] = &[
     "tests/fixtures/v5_strategy_basic.pine",
     "tests/fixtures/v6_indicator_basic.pine",
     "tests/fixtures/v6_dynamic_requests.pine",
+    "tests/fixtures/v6_editor_queries.pine",
     "tests/fixtures/migration_v6_strategy.pine",
     "tests/fixtures/compat_headerless.pine",
     "tests/fixtures/compat_future_version.pine",

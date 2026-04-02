@@ -1,93 +1,141 @@
 # Pine Script for Zed
 
-Pine Script v6 language support for Zed, packaged as a language extension MVP for TradingView `.pine` and `.ps` files while retaining practical compatibility with Pine Script v5.
+Pine Script language support for Zed, targeting Pine Script v6 (with v5 compatibility).
+
+Provides syntax highlighting, structural outline, and basic editing support for Pine Script in Zed.
+
+---
+
+## Language Support
+
+This extension targets Pine Script v6 syntax, with backward compatibility for v5.
+
+Note:
+- The underlying grammar is still evolving and may not cover all edge cases.
+- Some advanced or less common constructs may not yet be fully recognized.
+
+---
 
 ## Current Status
 
-This repository currently focuses on a small, stable MVP:
+This extension is currently an early-stage, stable MVP.
+
+### Supported
 
 - Language registration for `.pine` and `.ps`
-- A vendored Tree-sitter grammar wired through [extension.toml](extension.toml)
-- Syntax highlighting via `languages/pinescript/highlights.scm`
-- Basic editor behavior: `//` line comments, soft tabs, bracket and quote auto-closing
+- Syntax highlighting via Tree-sitter
+- Structural outline / symbols:
+  - `indicator(...)`
+  - `strategy(...)`
+  - `library(...)`
+  - User-defined functions
+  - `method`
+  - `type`
+  - Top-level variables
+- Basic editor intelligence:
+  - Indentation for common control structures (`if`, `for`, `while`, `switch`, etc.)
+  - Bracket and quote matching
 - Parser and highlight tests against Pine Script v5 and v6 fixtures
 
-The current MVP does not yet provide:
+### Not Yet Supported
 
-- Outline or document symbols
 - Snippets
-- LSP, diagnostics, completion, hover, or goto-definition
-- AI-specific integration, prompts, or context tooling
+- LSP features (diagnostics, completion, hover, goto-definition)
+- Advanced query coverage (folds, locals, tags)
+- AI-specific integration or tooling
+
+---
 
 ## Runtime Sources
 
-The runtime-relevant files in this repository are:
+The runtime-relevant components are:
 
-- `extension.toml`: extension manifest and pinned grammar reference
-- `languages/pinescript/config.toml`: file associations and basic editor behavior
-- `languages/pinescript/highlights.scm`: shipped highlight query
-- `vendor/tree-sitter-pine`: vendored grammar baseline referenced by the manifest
-- `extension.wasm`: generated artifact for local Zed loads, rebuilt from `target/wasm32-wasip2/release/pine_script_zed.wasm`
+- `extension.toml` — extension manifest and grammar pin
+- `languages/pinescript/config.toml` — file associations and editor behavior
+- `languages/pinescript/highlights.scm` — syntax highlighting
+- `languages/pinescript/outline.scm` — outline / symbols
+- `languages/pinescript/indents.scm` — indentation rules
+- `languages/pinescript/brackets.scm` — bracket matching
+- `vendor/tree-sitter-pine` — vendored grammar baseline
 
-## Development Install
+---
 
-1. Clone this repository.
-2. Build the extension wasm artifact:
+## Build / Development
 
-   ```bash
-   cargo build --release --target wasm32-wasip2
-   cp target/wasm32-wasip2/release/pine_script_zed.wasm extension.wasm
-   ```
+Zed runs the compiled `extension.wasm` artifact.
 
-3. Open Zed.
-4. Run `Install Dev Extension` from the command palette.
-5. Select the repository directory.
-6. Restart Zed if the language support does not load immediately.
-
-## Usage
-
-Open any `.pine` or `.ps` file in Zed. The extension will apply Pine Script language configuration and syntax highlighting automatically.
-
-## Development
-
-### Prerequisites
-
-- Rust toolchain
-- Node.js and npm
-- Zed editor
+This file is a **build artifact**, not source code.
 
 ### Build
 
 ```bash
 cargo build --release --target wasm32-wasip2
-```
+cp target/wasm32-wasip2/release/pine_script_zed.wasm extension.wasm
 
-The Zed-loadable artifact is written to `target/wasm32-wasip2/release/pine_script_zed.wasm`. Copy it to `extension.wasm` at the repository root before reinstalling the dev extension in Zed.
+Notes
+	•	Build target: wasm32-wasip2
+	•	Output: target/wasm32-wasip2/release/pine_script_zed.wasm
+	•	Local runtime artifact: extension.wasm
+	•	extension.wasm is ignored by git and should not be committed
 
-### Verify
+⸻
 
-```bash
+Development Install
+	1.	Clone this repository
+	2.	Build the extension:
+
+cargo build --release --target wasm32-wasip2
+cp target/wasm32-wasip2/release/pine_script_zed.wasm extension.wasm
+
+
+	3.	Open Zed
+	4.	Run Install Dev Extension
+	5.	Select this repository
+	6.	Restart Zed if needed
+
+⸻
+
+Usage
+
+Open any .pine or .ps file in Zed.
+
+The extension will automatically apply:
+	•	Pine Script syntax highlighting
+	•	Language configuration
+	•	Structural outline (symbols)
+
+⸻
+
+Verification
+
 cargo check
 cargo test
-```
 
-For manual verification, rebuild `extension.wasm`, reinstall the repository as a dev extension in Zed, and open files from `tests/fixtures/`.
+For manual verification:
+	•	Rebuild extension.wasm
+	•	Install as a dev extension in Zed
+	•	Open files from tests/fixtures/
 
-### Grammar Regeneration
+⸻
 
-The vendored parser baseline lives in `vendor/tree-sitter-pine`.
+Grammar Regeneration
 
-```bash
+The vendored grammar lives in:
+
+vendor/tree-sitter-pine
+
+To regenerate:
+
 npm --prefix vendor/tree-sitter-pine install
 npm --prefix vendor/tree-sitter-pine run generate
-```
 
-## Project Structure
 
-```text
+⸻
+
+Project Structure
+
 .
 ├── extension.toml
-├── extension.wasm
 ├── Cargo.toml
 ├── docs/
 │   └── status.md
@@ -98,39 +146,50 @@ npm --prefix vendor/tree-sitter-pine run generate
 ├── languages/
 │   └── pinescript/
 │       ├── config.toml
-│       └── highlights.scm
+│       ├── highlights.scm
+│       ├── outline.scm
+│       ├── indents.scm
+│       └── brackets.scm
 ├── tests/
 │   ├── fixtures/
-│   ├── ast_shape.rs
+│   ├── editor_queries.rs
 │   ├── fixture_parsing.rs
 │   ├── grammar_manifest_invariants.rs
 │   └── grammar_registration.rs
-```
 
-## Planned / Next
 
-The next phase should deepen the current language-extension MVP rather than expand scope abruptly:
+⸻
 
-- add clearer query coverage for outline and indentation metadata
-- expand fixture coverage for more Pine Script syntax edges
-- evaluate LSP or diagnostics only after the current MVP is stable
+Planned / Next
 
-See `docs/status.md` for a short status and roadmap note.
+Future improvements will focus on strengthening the current language support:
+	•	Expand grammar coverage for Pine Script v6 edge cases
+	•	Improve query accuracy and stability
+	•	Add additional editor queries where grammar support is reliable
+	•	Evaluate diagnostics / LSP integration once the grammar layer is stable
 
-## Reporting Issues
+See docs/status.md for a short roadmap.
 
-When reporting a syntax-highlighting problem, include:
+⸻
 
-1. A minimal Pine Script snippet that reproduces the issue.
-2. A screenshot from Zed.
-3. The expected highlighting behavior.
+Reporting Issues
 
-## License
+When reporting a problem, please include:
+	1.	A minimal Pine Script snippet
+	2.	A screenshot from Zed
+	3.	Expected vs actual behavior
 
-MIT. See [LICENSE](LICENSE).
+⸻
 
-## References
+License
 
-- [Pine Script Documentation](https://www.tradingview.com/pine-script-docs/)
-- [Zed Extension Documentation](https://zed.dev/docs/extensions)
-- [TradingView](https://www.tradingview.com/)
+MIT. See LICENSE￼.
+
+⸻
+
+References
+	•	Pine Script Docs: https://www.tradingview.com/pine-script-docs/
+	•	Zed Extensions: https://zed.dev/docs/extensions
+	•	TradingView: https://www.tradingview.com/
+
+---

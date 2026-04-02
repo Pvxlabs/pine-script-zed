@@ -1,7 +1,8 @@
 # Cargo build output
 /target/
 
-# Generated extension artifact copied from `target/wasm32-wasip2/...` for local Zed loads
+# Generated extension artifact for local Zed loads.
+# Rebuild it from `target/wasm32-wasip2/...` when needed, but do not commit it.
 /extension.wasm
 
 # Local planning scratch space, not part of the shipped extension

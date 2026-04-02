@@ -1,0 +1,31 @@
+//@version=6
+library("Editor Queries")
+
+type Signal
+    float value
+    color tone = color.green
+
+sum_to(float value, int steps) =>
+    total = value
+    for i = 1 to steps
+        total += i
+    total
+
+method scaled(float value, float factor) =>
+    adjusted = value * factor
+    adjusted
+
+var float global_seed = na
+if close > open
+    global_seed := close
+
+trend_value = if close > open
+    close
+else
+    open
+
+switch
+    close > open =>
+        global_seed := high
+    close < open =>
+        global_seed := low
