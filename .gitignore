@@ -1,4 +1,5 @@
 /target/
 /extension.wasm
 /grammars/
+docs/superpowers/
 .DS_Store
