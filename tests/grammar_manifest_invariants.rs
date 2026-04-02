@@ -130,3 +130,28 @@ fn legacy_top_level_sample_is_removed() {
         "top-level sample should be removed in favor of versioned fixtures"
     );
 }
+
+#[test]
+fn release_manifest_rev_points_to_previous_commit() {
+    let manifest = read("extension.toml");
+    let grammar_section = named_section(&manifest, "[grammars.pine]");
+    let rev_line = grammar_section
+        .lines()
+        .find(|line| line.trim_start().starts_with("rev = "))
+        .expect("rev line should exist");
+    let rev = rev_line.split('"').nth(1).expect("rev should be quoted");
+
+    let output = Command::new("git")
+        .args(["rev-parse", "HEAD~1"])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .expect("git rev-parse should run");
+    assert!(
+        output.status.success(),
+        "git rev-parse should succeed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let expected = String::from_utf8(output.stdout).expect("git output should be utf8");
+
+    assert_eq!(rev, expected.trim());
+}

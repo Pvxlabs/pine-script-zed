@@ -9,4 +9,4 @@ repository = "https://github.com/Pvxlabs/pine-script-zed.git"
 [grammars.pine]
 repository = "https://github.com/Pvxlabs/pine-script-zed.git"
 path = "vendor/tree-sitter-pine"
-rev = "a76c6d00486edb6e2e0e690b05d5fc04017ade3c"
+rev = "2c6822499f3d525e167bfa7bcb0bb3db0f28c45d"
