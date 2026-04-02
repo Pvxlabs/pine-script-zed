@@ -78,8 +78,7 @@ MIT. See LICENSE￼.
 ⸻
 
 References
-	•Pine Script Docs: https://www.tradingview.com/pine-script-docs/
-	
-	•Zed Extensions: https://zed.dev/docs/extensions
+•Pine Script Docs: https://www.tradingview.com/pine-script-docs/
+•Zed Extensions: https://zed.dev/docs/extensions
 
 ---
