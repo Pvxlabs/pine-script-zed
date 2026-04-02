@@ -61,20 +61,33 @@ fn read(path: &str) -> String {
     std::fs::read_to_string(path).expect("file should be readable")
 }
 
+fn top_level_section(content: &str) -> &str {
+    let first_section_line = content
+        .lines()
+        .find(|line| line.trim_start().starts_with('['))
+        .expect("manifest should contain a section header");
+    let index = content
+        .find(first_section_line)
+        .expect("section header should exist in manifest");
+    &content[..index]
+}
+
+fn named_section<'a>(content: &'a str, header: &str) -> &'a str {
+    let (_, tail) = content
+        .split_once(header)
+        .unwrap_or_else(|| panic!("{header} section should exist"));
+    match tail.find("\n[") {
+        Some(index) => &tail[..index],
+        None => tail,
+    }
+}
+
 #[test]
 fn manifest_points_to_vendored_grammar() {
     let manifest = read("extension.toml");
-    assert_eq!(
-        manifest
-            .matches("repository = \"https://github.com/Pvxlabs/pine-script-zed.git\"")
-            .count(),
-        2
-    );
-    assert!(manifest.contains("[grammars.pine]"));
-    let grammar_section = manifest
-        .split("[grammars.pine]")
-        .nth(1)
-        .expect("grammar section should exist");
+    let top_level = top_level_section(&manifest);
+    assert!(top_level.contains("repository = \"https://github.com/Pvxlabs/pine-script-zed.git\""));
+    let grammar_section = named_section(&manifest, "[grammars.pine]");
     assert!(
         grammar_section.contains("repository = \"https://github.com/Pvxlabs/pine-script-zed.git\"")
     );
@@ -84,15 +97,16 @@ fn manifest_points_to_vendored_grammar() {
 #[test]
 fn cargo_has_tree_sitter_dev_dependencies() {
     let cargo = read("Cargo.toml");
-    assert!(cargo.contains("[dev-dependencies]"));
-    assert!(cargo.contains("tree-sitter = "));
-    assert!(cargo.contains("tree-sitter-pine = { path = \"vendor/tree-sitter-pine\" }"));
+    let dev_dependencies = named_section(&cargo, "[dev-dependencies]");
+    assert!(dev_dependencies.contains("tree-sitter = "));
+    assert!(dev_dependencies.contains("tree-sitter-pine = { path = \"vendor/tree-sitter-pine\" }"));
 }
 
 #[test]
 fn manifest_rev_is_a_40_character_sha() {
     let manifest = read("extension.toml");
-    let rev_line = manifest
+    let grammar_section = named_section(&manifest, "[grammars.pine]");
+    let rev_line = grammar_section
         .lines()
         .find(|line| line.trim_start().starts_with("rev = "))
         .expect("rev line should exist");
